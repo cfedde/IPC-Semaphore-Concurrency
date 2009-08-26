@@ -45,7 +45,7 @@ sub new {
 	$self->_touch() if (!-f $self->{'_args'}->{'pathname'} || $self->{'_args'}->{'auto_touch'}) or return undef;
 	my $key = $self->_ftok() or return undef;
 
-	$self->{'semaphore'} = $self->_create($key);
+	$self->{'semaphore'} = $self->_create($key) or return undef;
 
 	return $self;
 }
