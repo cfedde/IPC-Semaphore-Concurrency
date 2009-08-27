@@ -6,7 +6,7 @@ code. It can be used to limit resource usage or to give exclusive access to
 specific resources.
 
 This module is similar in functionality to IPC::Concurrency with the main
-differences being that is uses SysV/POSIX Semaphores, and allow queuing up
+differences being that is uses SysV Semaphores, and allow queuing up
 processes while others hold the semaphore. There are other difference which
 gives more flexibility in some cases.
 
