@@ -21,31 +21,30 @@ sub new {
 	my $class = shift;
 
 	my %args;
-       	if (@_ == 1) {
-		print "foo\n\n\n";
+	if (@_ == 1) {
 		# Only one required argument
-		$args{'pathname'} = shift;
+		$args{'path'} = shift;
 	} else {
 		%args = @_;
 	}
 
-	if (!exists($args{'pathname'})) {
-		carp "Must supply a pathname!";
+	if (!exists($args{'path'})) {
+		carp "Must supply a path!"; #TODO: Allow private semaphores
 		return undef;
 	}
 	# Set defaults
-	$args{'auto_touch'} ||= 1;
-	$args{'proj_id'} ||= 0;
-	$args{'sem_max'} ||= 1;
-	$args{'slots'} ||= 1;
+	$args{'project'} ||= 0;
+	$args{'count'}   ||= 1;
+	$args{'value'}   ||= 1; # TODO: allow array (one value per semaphore)
+	$args{'touch'}   ||= 1;
 
 	my $self = bless {}, $class;
 	$self->{'_args'} = { %args };
 
-	$self->_touch() if (!-f $self->{'_args'}->{'pathname'} || $self->{'_args'}->{'auto_touch'}) or return undef;
-	my $key = $self->_ftok() or return undef;
+	$self->_touch() if (!-f $self->{'_args'}->{'path'} || $self->{'_args'}->{'touch'}) or return undef;
+	$self->{'_args'}->{'key'} = $self->_ftok() or return undef;
 
-	$self->{'semaphore'} = $self->_create($key) or return undef;
+	$self->{'_args'}->{'sem'} = $self->_create($self->key()) or return undef;
 
 	return $self;
 }
@@ -53,15 +52,15 @@ sub new {
 # Internal functions
 sub _touch {
 	my $self = shift;
-	sysopen(my $fh, $self->{'_args'}->{'pathname'}, O_WRONLY|O_CREAT|O_NONBLOCK|O_NOCTTY) or carp "Can't create ".$self->{'_args'}->{'pathname'}.": $!" and return 0;
-	utime(undef, undef, $self->{'_args'}->{'pathname'}) if ($self->{'_args'}->{'auto_touch'});
-	close $fh or carp "Can't close ".$self->{'_args'}->{'pathname'}.": $!" and return 0;
+	sysopen(my $fh, $self->{'_args'}->{'path'}, O_WRONLY|O_CREAT|O_NONBLOCK|O_NOCTTY) or carp "Can't create ".$self->{'_args'}->{'path'}.": $!" and return 0;
+	utime(undef, undef, $self->{'_args'}->{'path'}) if ($self->{'_args'}->{'auto_touch'});
+	close $fh or carp "Can't close ".$self->{'_args'}->{'path'}.": $!" and return 0;
 	return 1;
 }
 
 sub _ftok {
 	my $self = shift;
-	return ftok($self->{'_args'}->{'pathname'}, $self->{'_args'}->{'proj_id'}) or carp "Can't create semaphore key: $!" and return undef;
+	return ftok($self->{'_args'}->{'path'}, $self->{'_args'}->{'proj'}) or carp "Can't create semaphore key: $!" and return undef;
 }
 
 sub _create {
@@ -71,14 +70,14 @@ sub _create {
 	my $sem = IPC::Semaphore->new($key, 0, 0);
 	if (!defined($sem)) {
 		# Creatie a new semaphore...
-		$sem = IPC::Semaphore->new($key, $self->{'_args'}->{'sem_max'}, IPC_CREAT|IPC_EXCL|S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+		$sem = IPC::Semaphore->new($key, $self->{'_args'}->{'count'}, IPC_CREAT|IPC_EXCL|S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
 		if (!defined($sem)) {
 			# Make sure another process did not create it in our back
 			$sem = IPC::Semaphore->new($key, 0, 0) or carp "Semaphore creation failed!\n";
 		} else {
 			# If we created the semaphore now we assign its initial value
-			for (my $i=0; $i<$self->{'_args'}->{'sem_max'}; $i++) { # TODO: Support array - see above
-				$sem->op($i, $self->{'_args'}->{'slots'}, 0);
+			for (my $i=0; $i<$self->{'_args'}->{'count'}; $i++) { # TODO: Support array - see above
+				$sem->op($i, $self->{'_args'}->{'value'}, 0);
 			}
 		}
 	}
@@ -90,49 +89,70 @@ sub _create {
 
 sub getall {
 	my $self = shift;
-	return $self->{'semaphore'}->getall();
+	return $self->{'_args'}->{'sem'}->getall();
 }
 
 sub getval {
 	my $self = shift;
 	my $nsem = shift or 0;
-	return $self->{'semaphore'}->getval($nsem);
+	return $self->{'_args'}->{'sem'}->getval($nsem);
 }
 
 sub getncnt {
 	my $self = shift;
 	my $nsem = shift or 0;
-	return $self->{'semaphore'}->getncnt($nsem);
+	return $self->{'_args'}->{'sem'}->getncnt($nsem);
 }
 
-sub getslot {
+sub setall {
+	my $self = shift;
+	return $self->{'_args'}->{'sem'}->setall(@_);
+}
+
+sub setval {
+	my $self = shift;
+	my ($nsem, $val) = @_;
+	return $self->{'_args'}->{'sem'}->setval($nsem, $val);
+}
+
+sub stat {
+	my $self = shift;
+	return $self->{'_args'}->{'sem'}->stat();
+}
+
+sub key {
+	my $self = shift;
+	return $self->{'_args'}->{'key'};
+}
+
+sub acquire {
 	my $self = shift;
 
         my %args;
         if (@_ >= 1 && $_[0] =~ /^\d+$/) {
 		# Positional arguments
-		($args{'number'}, $args{'wait'}, $args{'maxqueue'}, $args{'undo'}) = @_;
+		($args{'sem'}, $args{'wait'}, $args{'max'}, $args{'undo'}) = @_;
 	} else {
 		%args = @_;
 	}
 	# Defaults
-	$args{'number'}   ||= 0;
-	$args{'wait'}     ||= 0;
-	$args{'maxqueue'} ||= 0;
-	$args{'undo'}     ||= 1;
+	$args{'sem'}  ||= 0;
+	$args{'wait'} ||= 0;
+	$args{'max'}  ||= 0;
+	$args{'undo'} ||= 1;
 
-	my $sem = $self->{'semaphore'};
+	my $sem = $self->{'_args'}->{'sem'};
 	my $flags = IPC_NOWAIT;
 	$flags |= SEM_UNDO if ($args{'undo'});
 
 	my $ret;
-	if (($ret = $sem->op($args{'number'}, -1, $flags))) {
+	if (($ret = $sem->op($args{'sem'}, -1, $flags))) {
 		return $ret;
 	} elsif ($args{'wait'}) {
-		return $ret if ($args{'maxqueue'} && $self->getncnt($args{'number'}) >= $args{'maxqueue'});
+		return $ret if ($args{'max'} && $self->getncnt($args{'sem'}) >= $args{'max'});
 		# Remove NOWAIT and block
 		$flags ^= IPC_NOWAIT;
-		return $sem->op($args{'number'}, -1, $flags);
+		return $sem->op($args{'sem'}, -1, $flags);
 	}
 	return $ret;
 }
@@ -140,12 +160,12 @@ sub getslot {
 sub release {
 	my $self = shift;
 	my $number = shift || 0;
-	return $self->{'semaphore'}->op($number, 1, 0);
+	return $self->{'_args'}->{'sem'}->op($number, 1, 0);
 }
 
 sub remove {
 	my $self = shift;
-	return $self->{'semaphore'}->remove();
+	return $self->{'_args'}->{'sem'}->remove();
 }
 
 1;

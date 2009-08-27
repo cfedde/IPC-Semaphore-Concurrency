@@ -21,10 +21,11 @@ ok(defined($c), "Simple usage");
 
 # Full semaphore usage
 $c = IPC::Semaphore::Concurrency->new(
-	pathname   => '/tmp/.IPC::Semaphore::Concurrency.test2.$$',
-	auto_touch => 1,
-	proj_id    => 8,
-	max_sem    => 20,
+	path    => '/tmp/.IPC::Semaphore::Concurrency.test2.$$',
+	touch   => 1,
+	project => 8,
+	count   => 20,
+	value   => 1,
 	);
 ok(defined($c), "Full usage");
 
