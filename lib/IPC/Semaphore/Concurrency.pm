@@ -363,6 +363,11 @@ increment the semaphore by one.
 
 =head1 BUGS
 
+semop(3) and semop(3p) man pages both indicate that C<errno> should be set to
+C<EAGAIN> if the call would block and C<IPC_NOWAIT> is used, yet in my tests
+under Linux C<errno> was set to C<EWOULDBLOCK>. See C<example.pl> and
+C<example2.pl> for examples of paranoiac error checking. YMMV.
+
 Please report bugs to C<tguyot@gmail.com>.
 
 =head1 SEE ALSO
