@@ -258,7 +258,7 @@ new semaphore. Defaults to 0.
 
 =item count
 
-Number of senaphores to create. Default is 1.
+Number of semaphores to create. Default is 1.
 
 =item value
 
@@ -267,7 +267,7 @@ Value assigned to the semaphore at creation time. Default is 1.
 =item touch
 
 If true, tough the path when creating the semaphore. This can be used to
-ensure a file in /tmp does not get removed because it is too old.
+ensure a file in /tmp do not get removed because it is too old.
 
 =back
 
@@ -291,7 +291,7 @@ ensure a file in /tmp does not get removed because it is too old.
 
 These functions are wrapper of the same functions in IPC::Semaphore.
 
-For getval and getncnt, if not argument is given the default is 0.
+For getval and getncnt, if no argument is given the default is 0.
 
 =head2 key
 
@@ -329,17 +329,17 @@ If true, block on semaphore acquisition.
 If C<wait> is true, don't block if b<max> processes or more are waiting
 for the semaphore. Defaults to -1 (unlimited).
 
-You may want to set it to some decent value if blocking on the semaprore
+You may want to set it to some decent value if blocking on the semaphore
 to ensure processes don't add up infinitely.
 
 =item undo
 
-If defined and false, the semaphore won't be released automaticfally when
-process exits. You can manuallt release the semaphore with $c->release().
+If defined and false, the semaphore won't be released automatically when
+process exits. You can manually release the semaphore with $c->release().
 
 Use with caution as you can block semaphore slots if the process crash or
 gets killed. If used together with C<wait> blocked process could
-eventually stack up leading to resources exaustion.
+eventually stack up leading to resources exhaustion.
 
 =back
 
