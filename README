@@ -7,7 +7,7 @@ specific resources.
 
 This module is similar in functionality to IPC::Concurrency with the main
 differences being that is uses SysV Semaphores, and allow queuing up
-processes while others hold the semaphore. There are other difference which
+processes while others hold the semaphore. There are other differences which
 gives more flexibility in some cases.
 
 INSTALLATION
@@ -28,12 +28,9 @@ This module requires these other modules and libraries:
 
 COPYRIGHT AND LICENCE
 
-Put the correct copyright and licence information here.
-
 Copyright (C) 2009 by Thomas Guyot-Sionnest <tguyot@gmail.com>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.8 or,
 at your option, any later version of Perl 5 you may have available.
-
 
