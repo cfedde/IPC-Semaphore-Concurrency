@@ -137,8 +137,8 @@ sub key {
 sub acquire {
 	my $self = shift;
 
-        my %args;
-        if (@_ >= 1 && $_[0] =~ /^\d+$/) {
+	my %args;
+	if (@_ >= 1 && $_[0] =~ /^\d+$/) {
 		# Positional arguments
 		($args{'sem'}, $args{'wait'}, $args{'max'}, $args{'undo'}) = @_;
 	} else {
@@ -242,7 +242,7 @@ None for now (could change before first Beta)
         project => $proj_id
         count   => $sem_count
         value   => $sem_value
-				touch   => $touch_path
+        touch   => $touch_path
         );
 
 =over 4
