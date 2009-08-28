@@ -63,7 +63,7 @@ sub _touch {
 sub _ftok {
 	# Create an IPC key, returns result of ftok()
 	my $self = shift;
-	return ftok($self->{'_args'}->{'path'}, $self->{'_args'}->{'proj'}) or carp "Can't create semaphore key: $!" and return undef;
+	return ftok($self->{'_args'}->{'path'}, $self->{'_args'}->{'project'}) or carp "Can't create semaphore key: $!" and return undef;
 }
 
 sub _create {
@@ -154,11 +154,14 @@ sub acquire {
 	my $flags = IPC_NOWAIT;
 	$flags |= SEM_UNDO if ($args{'undo'});
 
-	my $ret;
+	my ($ret, $ncnt);
+	# Get blocked process count here to retain Errno (thus $!) after the first semop call.
+	$ncnt = $self->getncnt($args{'sem'}) if ($args{'wait'});
+
 	if (($ret = $sem->op($args{'sem'}, -1, $flags))) {
 		return $ret;
 	} elsif ($args{'wait'}) {
-		return $ret if ($args{'max'} >= 0 && $self->getncnt($args{'sem'}) >= $args{'max'});
+		return $ret if ($args{'max'} >= 0 && $ncnt >= $args{'max'});
 		# Remove NOWAIT and block
 		$flags ^= IPC_NOWAIT;
 		return $sem->op($args{'sem'}, -1, $flags);
