@@ -329,7 +329,7 @@ If true, block on semaphore acquisition.
 
 =item max
 
-If C<wait> is true, don't block if b<max> processes or more are waiting
+If C<wait> is true, don't block if C<max> processes or more are waiting
 for the semaphore. Defaults to -1 (unlimited).
 
 You may want to set it to some decent value if blocking on the semaphore
