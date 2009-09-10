@@ -227,7 +227,7 @@ differences being that is uses SysV Semaphores, and allow queuing up
 processes while others hold the semaphore. There are other difference which
 gives more flexibility in some cases.
 
-Generally, errors messages on failures can be retriever with $!.
+Generally, errors messages on failures can be retrieved with $!.
 
 =head2 EXPORTS
 
@@ -357,6 +357,8 @@ increment the semaphore by one.
 
 =head1 TODO
 
+=head3 Allow setting semaphore permissions, default to 600
+
 =head3 Allow private semaphores
 
 =head3 Allow passing an array of values
@@ -376,6 +378,12 @@ L<IPC::Semaphore> - The module this is based on.
 
 The code repository is mirrored on
 L<http://repo.or.cz/w/IPC-Semaphore-Concurrency.git>
+
+CLI tools for controlling semaphores:
+
+ipcs(1), especially ipcs -s for listing all semaphores
+
+ipcrm(1), for removing semaphores by ID (-s) or KEY (-S)
 
 =head1 AUTHOR
 
