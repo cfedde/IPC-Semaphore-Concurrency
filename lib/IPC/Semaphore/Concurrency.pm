@@ -338,11 +338,12 @@ to ensure processes don't add up infinitely.
 =item undo
 
 If defined and false, the semaphore won't be released automatically when
-process exits. You can manually release the semaphore with $c->release().
+process exits. You must release manually and B<only once> the semaphore
+with C<< $c->release() >>. See C<release> for important information before using
+this!
 
 Use with caution as you can block semaphore slots if the process crash or
-gets killed. If used together with C<wait> blocked process could
-eventually stack up leading to resources exhaustion.
+gets killed.
 
 =back
 
@@ -352,8 +353,27 @@ eventually stack up leading to resources exhaustion.
 
     $c->release($sem_number);
 
-Useful only if you turn off the C<undo> option in C<acquire> function;
-increment the semaphore by one.
+B<WARNING: Use this at your own risks and only after understanding the
+implications below!>
+
+This function is useful only if you turn off the C<undo> option in
+C<acquire> function and B<must be used with it.> It merely increment the
+semaphore by one.
+
+In its usual use case, IPC::Semaphore::Concurrency is locked once and
+until the process exits. This function allow you to control yourself the
+release of the lock, but you must understand what releasing a semaphore
+actually means. Semaphores are merely counters and every time you
+C<acquire> them you merely decrease the value - the locking happens once
+the counter reaches 0.
+
+This means if you C<release> more than once, you will effectively
+increase the semaphore value and next time the semaphore is used it will
+require as many C<acquire> to lock or fail locking. B<This includes the
+implicit increase when the process exits when you don't set C<undo> to
+false in C<acquire>!>. This means if you use C<release> without C<undo>
+set to false, you will raise the value again at every process exit and your
+semaphore won't lock things anymore!
 
 =head1 TODO
 
