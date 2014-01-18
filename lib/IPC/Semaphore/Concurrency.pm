@@ -201,7 +201,7 @@ IPC::Semaphore::Concurrency - Concurrency guard using semaphores
 
 
     my $c = IPC::Semaphore::Concurrency->new(
-        path  => /tmp/sem_file,
+        path  => '/tmp/sem_file',
         count => 2,
         value => $sem_max,
         );
