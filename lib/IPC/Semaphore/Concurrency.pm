@@ -227,11 +227,11 @@ differences being that is uses SysV Semaphores, and allow queuing up
 processes while others hold the semaphore. There are other difference which
 gives more flexibility in some cases.
 
-Generally, errors messages on failures can be retrieved with $!.
+Generally, errors messages on failures can be retrieved with C<$!>.
 
 =head2 EXPORTS
 
-None for now (could change before first Beta)
+None
 
 =head1 CONSTRUCTOR
 
