@@ -25,4 +25,4 @@ requires:
   IPC::SysV: 0
   POSIX: 0
   Test::More: 0
-version: 0.03
+version: 0.04
