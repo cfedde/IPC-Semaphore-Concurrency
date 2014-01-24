@@ -1,5 +1,8 @@
 Revision history for Perl extension IPC::Semaphore::Concurrency.
 
+0.05  
+  - Fix tests on Cygwin w/o cygserver running
+
 0.04  Thu Jan 23 03:24:49 UTC 2014
   - Fix failing tests on platforms with missing semaphore support
 

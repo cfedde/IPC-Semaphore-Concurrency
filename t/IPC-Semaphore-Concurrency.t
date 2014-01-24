@@ -27,7 +27,7 @@ if ($Config{'d_sem'} ne 'define' || $Config{'d_semget'} ne 'define' ||
 }
 
 #  Cygwin needs a cygserver running to handle IPC syscalls
-if ($^O eq 'cygwin') {
+if ($Config{'osname'} eq 'cygwin') {
 	system('ipcs -s >/dev/null 2>&1');
 	if ($?) {
 		plan(skip_all => 'command "ipcs -s" failed; are you running cygserver?');
