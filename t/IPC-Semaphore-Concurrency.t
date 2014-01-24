@@ -19,11 +19,19 @@ use warnings;
 # bits taken from IPC::SysV tests...
 use Config;
 if ($ENV{'PERL_CORE'} && $Config{'extensions'} !~ m[\bIPC/SysV\b]) {
-    plan(skip_all => 'IPC::SysV was not built');
+	plan(skip_all => 'IPC::SysV was not built');
 }
 if ($Config{'d_sem'} ne 'define' || $Config{'d_semget'} ne 'define' ||
     $Config{'d_semctl'} ne 'define') {
-  plan(skip_all => 'Lacking d_sem, d_semget or d_semctl');
+	plan(skip_all => 'Lacking d_sem, d_semget or d_semctl');
+}
+
+#  Cygwin needs a cygserver running to handle IPC syscalls
+if ($^O eq 'cygwin') {
+	system('ipcs -s >/dev/null 2>&1');
+	if ($?) {
+		plan(skip_all => 'command "ipcs -s" failed; are you running cygserver?');
+	}
 }
 
 # My handy Acme Child Reaper(tm)
