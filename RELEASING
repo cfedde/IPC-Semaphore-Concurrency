@@ -14,6 +14,8 @@ Releasing steps
      lib/IPC/Semaphore/Concurrency.pm
 
 5. Run Makefile.PL
+   $ make distclean
+   $ perl Makefile.PL
 
 6. Commit changes
 
@@ -25,13 +27,9 @@ Releasing steps
    $ git push origin
    $ git push --tags origin
 
-9. Export tree and remove .gitignore
-   $ git checkout-index -a --prefix=../release/IPC-Semaphore-Concurrency-$IPCSC_VER/
-   $ cd ../release/
-   $ rm IPC-Semaphore-Concurrency-$IPCSC_VER/.gitignore
+9. Make dist and copy to releases
+   $ make dist
+   $ mv IPC-Semaphore-Concurrency-$IPCSC_VER.tar.gz ../release/
 
-10. Tar/gz the tree
-   $ tar --owner 0 --group 0 -czvf IPC-Semaphore-Concurrency-$IPCSC_VER.tar.gz IPC-Semaphore-Concurrency-$IPCSC_VER
-
-11. Upload to CPAN
+10. Upload to CPAN
 
