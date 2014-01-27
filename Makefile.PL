@@ -4,16 +4,26 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 WriteMakefile(
     NAME              => 'IPC::Semaphore::Concurrency',
+    ABSTRACT_FROM     => 'lib/IPC/Semaphore/Concurrency.pm', # retrieve abstract from module
+    AUTHOR            => 'Thomas Guyot-Sionnest <tguyot@gmail.com>',
     VERSION_FROM      => 'lib/IPC/Semaphore/Concurrency.pm', # finds $VERSION
+    LICENSE           => 'perl',
     PREREQ_PM         => {
-	    Carp              => 0,
-	    POSIX             => 0,
-	    IPC::SysV         => 0,
-	    IPC::Semaphore    => 0,
-	    Test::More 	      => 0,
-	    Exporter          => 0,
+	    'Carp'            => 0,
+	    'POSIX'           => 0,
+	    'IPC::SysV'       => 0,
+	    'IPC::Semaphore'  => 0,
+	    'Test::More' 	    => 0,
+	    'Exporter'        => 0,
     },
-    ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
-      (ABSTRACT_FROM  => 'lib/IPC/Semaphore/Concurrency.pm', # retrieve abstract from module
-       AUTHOR         => 'Thomas Guyot-Sionnest <tguyot@gmail.com>') : ()),
+    META_MERGE        => {
+      'meta-spec'       => { version => 2 },
+      resources         => {
+        repository        => {
+          type              => 'git',
+          url               => 'https://github.com/dermoth/IPC-Semaphore-Concurrency.git',
+          web               => 'https://github.com/dermoth/IPC-Semaphore-Concurrency',
+        },
+      },
+    },
 );
