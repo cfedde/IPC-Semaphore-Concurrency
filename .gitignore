@@ -2,3 +2,5 @@
 /Makefile
 /blib
 /pm_to_blib
+/MYMETA.yml
+/IPC-Semaphore-Concurrency-*.tar.gz
