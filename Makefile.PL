@@ -9,12 +9,12 @@ WriteMakefile(
     VERSION_FROM      => 'lib/IPC/Semaphore/Concurrency.pm', # finds $VERSION
     LICENSE           => 'perl',
     PREREQ_PM         => {
-	    'Carp'            => 0,
-	    'POSIX'           => 0,
-	    'IPC::SysV'       => 0,
-	    'IPC::Semaphore'  => 0,
-	    'Test::More' 	    => 0,
-	    'Exporter'        => 0,
+      'Carp'            => 0,
+      'POSIX'           => 0,
+      'IPC::SysV'       => 0,
+      'IPC::Semaphore'  => 0,
+      'Test::More'      => 0,
+      'Exporter'        => 0,
     },
     META_MERGE        => {
       'meta-spec'       => { version => 2 },

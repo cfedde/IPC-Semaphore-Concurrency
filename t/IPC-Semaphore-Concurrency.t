@@ -1,5 +1,6 @@
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl IPC-Semaphore-Concurrency.t'
+# `make test'. After `make install' it should work as `perl
+# IPC-Semaphore-Concurrency.t'
 
 #########################
 
@@ -12,8 +13,9 @@ use warnings;
 
 #########################
 
-# Insert your test code below, the Test::More module is use()ed here so read
-# its man page ( perldoc Test::More ) for help writing this test script.
+# Insert your test code below, the Test::More module is use()ed here so
+# read its man page ( perldoc Test::More ) for help writing this test
+# script.
 
 # Skip all if the testing architecture doesn't support semaphores
 # bits taken from IPC::SysV tests...
@@ -22,15 +24,16 @@ if ($ENV{'PERL_CORE'} && $Config{'extensions'} !~ m[\bIPC/SysV\b]) {
 	plan(skip_all => 'IPC::SysV was not built');
 }
 if ($Config{'d_sem'} ne 'define' || $Config{'d_semget'} ne 'define' ||
-    $Config{'d_semctl'} ne 'define') {
+	$Config{'d_semctl'} ne 'define') {
 	plan(skip_all => 'Lacking d_sem, d_semget or d_semctl');
 }
 
-#  Cygwin needs a cygserver running to handle IPC syscalls
+# Cygwin needs a cygserver running to handle IPC syscalls
 if ($Config{'osname'} eq 'cygwin') {
 	system('ipcs -s >/dev/null 2>&1');
 	if ($?) {
-		plan(skip_all => 'command "ipcs -s" failed; are you running cygserver?');
+		plan(skip_all
+			=> 'command "ipcs -s" failed; are you running cygserver?');
 	}
 }
 
@@ -43,7 +46,8 @@ my $base = ".IPC-Semaphore-Concurrency.test";
 # Try different paths for writing the semaphore files
 foreach my $prefix ('/tmp/', '/var/tmp/', '') {
 	my $tmpfile = $prefix.$base;
-	if (sysopen(my $f, "$tmpfile-0.$$", O_WRONLY|O_CREAT|O_NONBLOCK|O_NOCTTY)) {
+	if (sysopen(my $f, "$tmpfile-0.$$", O_WRONLY|O_CREAT|O_NONBLOCK|
+			O_NOCTTY)) {
 		$file = $tmpfile;
 		# $base now becomes what we'll use for cleaning up...
 		$base = $prefix;
@@ -57,7 +61,8 @@ if (!defined($file)) {
 	plan tests => 5;
 }
 
-# Can't do that at compile time with a flexible plan, but we don't use prototypes anyway
+# Can't do that at compile time with a flexible plan, but we don't use
+# prototypes anyway
 use_ok('IPC::Semaphore::Concurrency');
 
 # Simple semaphore usage

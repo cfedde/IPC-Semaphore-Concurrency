@@ -6,7 +6,8 @@ use warnings;
 
 use Carp;
 use POSIX qw(O_WRONLY O_CREAT O_NONBLOCK O_NOCTTY);
-use IPC::SysV qw(ftok IPC_NOWAIT IPC_CREAT IPC_EXCL S_IRUSR S_IWUSR S_IRGRP S_IWGRP S_IROTH S_IWOTH SEM_UNDO);
+use IPC::SysV qw(ftok IPC_NOWAIT IPC_CREAT IPC_EXCL S_IRUSR S_IWUSR
+              S_IRGRP S_IWGRP S_IROTH S_IWOTH SEM_UNDO);
 use IPC::Semaphore;
 
 require Exporter;
@@ -35,16 +36,21 @@ sub new {
 	# Set defaults
 	$args{'project'} = 0 if (!exists($args{'project'}));
 	$args{'count'} = 1 if (!exists($args{'count'}));
-	$args{'value'} = 1 if (!exists($args{'value'})); # TODO: allow array (one value per semaphore)
+	# TODO: allow array below (one value per semaphore)
+	$args{'value'} = 1 if (!exists($args{'value'}));
 	$args{'touch'} = 1 if (!exists($args{'touch'}));
 
 	my $self = bless {}, $class;
 	$self->{'_args'} = { %args };
 
-	$self->_touch($self->{'_args'}->{'path'}) if (!-e $self->{'_args'}->{'path'} || $self->{'_args'}->{'touch'}) or return undef;
+	$self->_touch($self->{'_args'}->{'path'})
+		if (!-e $self->{'_args'}->{'path'} || $self->{'_args'}->{'touch'})
+			or return undef;
+
 	$self->{'_args'}->{'key'} = $self->_ftok() or return undef;
 
-	$self->{'_args'}->{'sem'} = $self->_create($self->key()) or return undef;
+	$self->{'_args'}->{'sem'} = $self->_create($self->key())
+		or return undef;
 
 	return $self;
 }
@@ -54,7 +60,9 @@ sub _touch {
 	# Create and/or touch the path, returns false if there's an error
 	my $self = shift;
 	my $path = shift;
-	sysopen(my $fh, $path, O_WRONLY|O_CREAT|O_NONBLOCK|O_NOCTTY) or carp "Can't create $path: $!" and return 0;
+	sysopen(my $fh, $path, O_WRONLY|O_CREAT|O_NONBLOCK|O_NOCTTY)
+		or carp "Can't create $path: $!" and return 0;
+
 	utime(undef, undef, $path) if ($self->{'_args'}->{'touch'});
 	close $fh or carp "Can't close $path: $!" and return 0;
 	return 1;
@@ -63,24 +71,29 @@ sub _touch {
 sub _ftok {
 	# Create an IPC key, returns result of ftok()
 	my $self = shift;
-	return ftok($self->{'_args'}->{'path'}, $self->{'_args'}->{'project'}) or carp "Can't create semaphore key: $!" and return undef;
+	return ftok($self->{'_args'}->{'path'}, $self->{'_args'}->{'project'})
+		or carp "Can't create semaphore key: $!" and return undef;
 }
 
 sub _create {
 	# Create the semaphore and assign it its initial value
 	my $self = shift;
 	my $key = shift;
-	# Presubably the semaphore exists already, so try using it right away
+	# Presumably the semaphore exists already, so try using it right away
 	my $sem = IPC::Semaphore->new($key, 0, 0);
 	if (!defined($sem)) {
-		# Creatie a new semaphore...
-		$sem = IPC::Semaphore->new($key, $self->{'_args'}->{'count'}, IPC_CREAT|IPC_EXCL|S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+		# Create a new semaphore...
+		$sem = IPC::Semaphore->new($key, $self->{'_args'}->{'count'},
+			IPC_CREAT|IPC_EXCL|S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|
+			S_IWOTH);
 		if (!defined($sem)) {
 			# Make sure another process did not create it in our back
-			$sem = IPC::Semaphore->new($key, 0, 0) or carp "Semaphore creation failed!\n";
+			$sem = IPC::Semaphore->new($key, 0, 0)
+				or carp "Semaphore creation failed!\n";
 		} else {
 			# If we created the semaphore now we assign its initial value
-			for (my $i=0; $i<$self->{'_args'}->{'count'}; $i++) { # TODO: Support array - see above
+			# TODO: Support array - see above
+			for (my $i=0; $i<$self->{'_args'}->{'count'}; $i++) {
 				$sem->op($i, $self->{'_args'}->{'value'}, 0);
 			}
 		}
@@ -145,8 +158,8 @@ sub acquire {
 		%args = @_;
 	}
 	# Defaults
-	$args{'sem'} =  0 if (!defined($args{'sem'}));
-	$args{'wait'} =  0 if (!defined($args{'wait'}));
+	$args{'sem'} = 0 if (!defined($args{'sem'}));
+	$args{'wait'} = 0 if (!defined($args{'wait'}));
 	$args{'max'} = -1 if (!defined($args{'max'}));
 	$args{'undo'} = 1 if (!defined($args{'undo'}));
 
@@ -155,7 +168,8 @@ sub acquire {
 	$flags |= SEM_UNDO if ($args{'undo'});
 
 	my ($ret, $ncnt);
-	# Get blocked process count here to retain Errno (thus $!) after the first semop call.
+	# Get blocked process count here to retain errno (thus $!) after the
+	# first semop call.
 	$ncnt = $self->getncnt($args{'sem'}) if ($args{'wait'});
 
 	if (($ret = $sem->op($args{'sem'}, -1, $flags))) {
@@ -219,13 +233,13 @@ IPC::Semaphore::Concurrency - Concurrency guard using semaphores
 =head1 DESCRIPTION
 
 This module allows you to limit concurrency of specific portions of your
-code. It can be used to limit resource usage or to give exclusive access to
-specific resources.
+code. It can be used to limit resource usage or to give exclusive access
+to specific resources.
 
-This module is similar in functionality to IPC::Concurrency with the main
-differences being that is uses SysV Semaphores, and allow queuing up
-processes while others hold the semaphore. There are other difference which
-gives more flexibility in some cases.
+This module is similar in functionality to IPC::Concurrency with the
+main differences being that is uses SysV Semaphores, and allow queuing
+up processes while others hold the semaphore. There are other difference
+which gives more flexibility in some cases.
 
 Generally, errors messages on failures can be retrieved with C<$!>.
 
@@ -256,8 +270,8 @@ if missing.
 =item project
 
 The project_id used for generating the key. If nothing else, the
-semaphore value can be used as changing the count will force generating a
-new semaphore. Defaults to 0.
+semaphore value can be used as changing the count will force generating
+a new semaphore. Defaults to 0.
 
 =item count
 
@@ -339,11 +353,11 @@ to ensure processes don't add up infinitely.
 
 If defined and false, the semaphore won't be released automatically when
 process exits. You must release manually and B<only once> the semaphore
-with C<< $c->release() >>. See C<release> for important information before using
-this!
+with C<< $c->release() >>. See C<release> for important information
+before using this!
 
-Use with caution as you can block semaphore slots if the process crash or
-gets killed.
+Use with caution as you can block semaphore slots if the process crash
+or gets killed.
 
 =back
 
@@ -372,8 +386,8 @@ increase the semaphore value and next time the semaphore is used it will
 require as many C<acquire> to lock or fail locking. B<This includes the
 implicit increase when the process exits when you don't set C<undo> to
 false in C<acquire>!>. This means if you use C<release> without C<undo>
-set to false, you will raise the value again at every process exit and your
-semaphore won't lock things anymore!
+set to false, you will raise the value again at every process exit and
+your semaphore won't lock things anymore!
 
 =head1 TODO
 
@@ -385,25 +399,26 @@ semaphore won't lock things anymore!
 
 =head1 BUGS
 
-semop(3) and semop(3p) man pages both indicate that C<errno> should be set to
-C<EAGAIN> if the call would block and C<IPC_NOWAIT> is used, yet in my tests
-under Linux C<errno> was set to C<EWOULDBLOCK>. See C<example.pl> and
-C<example2.pl> for examples of paranoiac error checking. YMMV.
+C<semop(3)> and C<semop(3p)> man pages both indicate that C<errno>
+should be set to C<EAGAIN> if the call would block and C<IPC_NOWAIT> is
+used, yet in my tests under Linux C<errno> was set to C<EWOULDBLOCK>.
+See C<example.pl> and C<example2.pl> for examples of paranoiac error
+checking. YMMV.
 
 Please report bugs to C<tguyot@gmail.com>.
 
 =head1 SEE ALSO
 
-L<IPC::Semaphore> - The module this is based on.
+L<IPC::Semaphore> - The module this one is based on.
 
 The code repository is mirrored on
 L<http://repo.or.cz/w/IPC-Semaphore-Concurrency.git>
 
 CLI tools for controlling semaphores:
 
-ipcs(1), especially ipcs -s for listing all semaphores
+C<ipcs(1)>, especially C<ipcs -s> for listing all semaphores
 
-ipcrm(1), for removing semaphores by ID (-s) or KEY (-S)
+C<ipcrm(1)>, for removing semaphores by ID (C<-s>) or KEY (C<-S>)
 
 =head1 AUTHOR
 
