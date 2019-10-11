@@ -71,7 +71,7 @@ sub _touch {
 sub _ftok {
 	# Create an IPC key, returns result of ftok()
 	my $self = shift;
-	return ftok($self->{'_args'}->{'path'}, $self->{'_args'}->{'project'})
+	(return ftok($self->{'_args'}->{'path'}, $self->{'_args'}->{'project'}))
 		or carp "Can't create semaphore key: $!" and return undef;
 }
 
